@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pong Game</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+  <script>
+let playerPaddle, aiPaddle, ball;
+let ballSpeedX, ballSpeedY;
+let aiDelay = 30
+
+function setup() {
+  createCanvas(600, 400);
+
+  // Create player and AI paddles
+  playerPaddle = createPaddle(20);
+  aiPaddle = createPaddle(width - 20);
+
+  // Create the ball in the center
+  ball = {
+    x: width / 2,
+    y: height / 2,
+    size: 10,
+    speed: 3 + random([1 , 4])
+  };
+
+  // Set ball initial movement
+  ballSpeedX = random([-1, 1]) * ball.speed;
+  ballSpeedY = random([-1, 1]) * ball.speed;
+}
+
+let aiTimer = 0; // to execute the delay movement function
+
+function draw() {
+  background(0);
+
+  // Draw paddles
+  playerPaddle.show();
+  aiPaddle.show();
+
+  // Update ball position
+  ball.x += ballSpeedX;
+  ball.y += ballSpeedY;
+
+  // Check collision with paddles
+  checkPaddleCollision(playerPaddle);
+  checkPaddleCollision(aiPaddle);
+
+  // Check collision with top and bottom edges
+  if (ball.y < 0 || ball.y > height) {
+    ballSpeedY *= -1;
+  }
+
+  // Draw the ball
+  fill(255);
+  ellipse(ball.x, ball.y, ball.size);
+
+  // Player paddle follows the mouse vertically
+  playerPaddle.move(playerPaddle.x, mouseY);
+  playerPaddle.y = constrain(playerPaddle.y, playerPaddle.height / 2, height - playerPaddle.height / 2);
+
+  // AI paddle delay
+  aiTimer++;
+  if (aiTimer > aiDelay) {
+    aiPaddle.move(aiPaddle.x, ball.y - aiPaddle.height / 2);
+    aiPaddle.y = constrain(aiPaddle.y, aiPaddle.height / 2, height - aiPaddle.height / 2);
+    aiTimer = 0; // Reset the timer
+  }
+
+  // Reset ball if it goes off-screen
+  if (ball.x < 0 || ball.x > width) {
+    resetBall();
+  }
+}
+
+function createPaddle(x) {
+  return {
+    x: x,
+    y: height / 2,
+    width: 10,
+    height: 80,
+    show: function() {
+      fill(255);
+      rect(this.x, this.y - this.height / 2, this.width, this.height);
+    },
+    move: function(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+  };
+}
+
+function checkPaddleCollision(paddle) {
+  if (
+    ball.x - ball.size / 2 < paddle.x + paddle.width &&
+    ball.x + ball.size / 2 > paddle.x &&
+    ball.y - ball.size / 2 < paddle.y + paddle.height / 2 &&
+    ball.y + ball.size / 2 > paddle.y - paddle.height / 2
+  ) {
+    ballSpeedX *= -1;
+  }
+}
+
+function resetBall() {
+  ball.x = width / 2;
+  ball.y = height / 2;
+  ballSpeedX = random([-1, 1]) * ball.speed;
+  ballSpeedY = random([-1, 1]) * ball.speed;
+}
+  </script>
+</body>
+</html>
